@@ -904,6 +904,11 @@ public class MultiUserTests {
     }
 
     @Test
+    public void buildTimeline() throws Exception {
+        PeergosNetworkUtils.buildTimeline(network, network, 2, random);
+    }
+
+    @Test
     public void acceptAndReciprocateFollowRequest() throws Exception {
         String username1 = random();
         String password1 = random();

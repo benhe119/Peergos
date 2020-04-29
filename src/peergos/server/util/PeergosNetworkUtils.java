@@ -1110,6 +1110,41 @@ public class PeergosNetworkUtils {
         Assert.assertTrue(children.size() == shareeCount);
     }
 
+    public static void buildTimeline(NetworkAccess sharerNode, NetworkAccess shareeNode, int shareeCount, Random random) throws Exception {
+        Assert.assertTrue(0 < shareeCount);
+
+        String sharerUsername = "me";
+        String sharerPassword = generatePassword();
+        UserContext sharer = PeergosNetworkUtils.ensureSignedUp(sharerUsername, sharerPassword, sharerNode, crypto);
+
+        List<String> shareePasswords = IntStream.range(0, shareeCount)
+                .mapToObj(i -> generatePassword())
+                .collect(Collectors.toList());
+        List<UserContext> shareeUsers = getUserContextsForNode(shareeNode, random, shareeCount, shareePasswords);
+
+        // friend sharer with others
+        friendBetweenGroups(Arrays.asList(sharer), shareeUsers);
+
+        // friends are now connected
+        // share a directory from u1 to the others
+        FileWrapper u1Root = sharer.getUserRoot().get();
+        String folderName = "folder";
+        u1Root.mkdir(folderName, sharer.network, SymmetricKey.random(), false, crypto).get();
+        String path = Paths.get(sharerUsername, folderName).toString();
+        System.out.println("PATH "+ path);
+        FileWrapper folder = sharer.getByPath(path).get().get();
+
+        // file is uploaded, do the actual sharing
+        boolean finished = sharer.shareWriteAccessWithAll(folder, Paths.get(path), sharer.getUserRoot().join(),
+                shareeUsers.stream()
+                        .map(c -> c.username)
+                        .collect(Collectors.toSet())).get();
+
+        List<TimelineEntry> timeline = sharer.getTimeline().join();
+        System.currentTimeMillis();
+
+    }
+
     public static void publicLinkToFile(Random random, NetworkAccess writerNode, NetworkAccess readerNode) throws Exception {
         String username = generateUsername(random);
         String password = "test01";

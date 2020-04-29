@@ -1312,6 +1312,27 @@ public class UserContext {
     }
 
     @JsMethod
+    public CompletableFuture<List<TimelineEntry>> getTimeline() {
+/*
+        return getChildren("/").thenApply(children ->
+                children.stream().filter(f -> !f.getOwnerName().equals(username))
+                        .map(file -> {
+                            FileProperties props = file.getFileProperties();
+                            String filename = props.name;
+                            boolean isDirectory = props.isDirectory;
+                            boolean isWritable = !file.isReadable();
+                            LocalDateTime timestamp = LocalDateTime.now();
+                            return new TimelineEntry(file.getOwnerName(), timestamp, filename, isDirectory, isWritable);
+                        }).collect(Collectors.toList()));
+        */
+        List<TimelineEntry> results = new ArrayList<>();
+        results.add(new TimelineEntry("a", LocalDateTime.now(), "pdf.pdf", false, false));
+        results.add(new TimelineEntry("b", LocalDateTime.now(), "video.mpg", false, false));
+        results.add(new TimelineEntry("c", LocalDateTime.now(), "/somewhereelse", true, true));
+        return CompletableFuture.completedFuture(results);
+    }
+
+    @JsMethod
     public CompletableFuture<Pair<Set<String>, Set<String>>> sharedWith(FileWrapper file) {
         AbsoluteCapability cap = file.getPointer().capability;
         Set<String> sharedReadAccessWith = sharedWithCache.getSharedWith(SharedWithCache.Access.READ, cap);
